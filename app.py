@@ -6,7 +6,7 @@ import json
 import copy
 
 # API Key dan URL
-OPENROUTER_API_KEY = "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"
+OPENROUTER_API_KEY ="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"
 API_URL = "https://openrouter.ai/api/v1/chat/completions"
 HEADERS = {"Authorization": f"Bearer {OPENROUTER_API_KEY}"}
 
@@ -16,11 +16,13 @@ MODEL_OPTIONS = {
     "google/gemma-3-27b-it:free": "Google Gemma 3-27b",
     "meta-llama/llama-4-maverick:free": "Meta Llama 4 Maverick"
 }
+
 import os
 
-OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
-HEADERS = {
-    "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+api_key = os.getenv("OPENROUTER_API_KEY")
+headers = {
+    "Authorization": f"Bearer {api_key}",
+    "Content-Type": "application/json"
 }
 
 # Layout default
