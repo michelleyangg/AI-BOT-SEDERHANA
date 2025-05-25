@@ -132,22 +132,17 @@ if user_input:
         "messages": [{"role": m["role"], "content": m["content"]} for m in st.session_state.current_chat]
     }
 
-    try:
-        response = requests.post(API_URL, headers=HEADERS, json=payload, timeout=10)
-        response.raise_for_status()
-        response_json = response.json()
-        bot_reply = response_json["choices"][0]["message"]["content"]
-    except requests.exceptions.Timeout:
-        bot_reply = "⏱️ Timeout: Server terlalu lama merespon."
-    except requests.exceptions.HTTPError as http_err:
-        bot_reply = f"🚨 HTTP Error: {http_err.response.status_code} - {http_err.response.text}"
-    except Exception as e:
-        bot_reply = f"❌ Error saat menghubungi API: {str(e)}"
+    with st.spinner("Mengetik..."):
+        try:
+            response = requests.post(API_URL, headers=HEADERS, json=payload, timeout=10)
+            response.raise_for_status()
+            response_json = response.json()
+            bot_reply = response_json["choices"][0]["message"]["content"]
+        except requests.exceptions.Timeout:
+            bot_reply = "⏱️ Timeout: Server terlalu lama merespon."
+        except requests.exceptions.HTTPError as http_err:
+            bot_reply = f"🚨 HTTP Error: {http_err.response.status_code} - {http_err.response.text}"
+        except Exception as e:
+            bot_reply = f"❌ Error saat menghubungi API: {str(e)}"
 
     st.session_state.current_chat.append({"role": "assistant", "content": bot_reply})
-
-    if st.session_state.current_chat_index == -1:
-        st.session_state.chat_history_list.append(copy.deepcopy(st.session_state.current_chat))
-        st.session_state.current_chat_index = len(st.session_state.chat_history_list) - 1
-    else:
-        st.session_state.chat_history_list[st.session_state.current_chat_index] = copy.deepcopy(st.session_state.current_chat)
