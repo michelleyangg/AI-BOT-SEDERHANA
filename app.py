@@ -1,28 +1,23 @@
 import streamlit as st
 import requests
-import base64
-from textblob import TextBlob
-import json
 import copy
+import json
+import base64
 
 # API Key dan URL
-OPENROUTER_API_KEY ="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"
+OPENROUTER_API_KEY = "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"
+HEADERS = {
+  "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+  "HTTP-Referer": "https://example-deploy-chatbot.streamlit.app",
+  "X-Title": "AI Chatbot Streamlit"
+}
 API_URL = "https://openrouter.ai/api/v1/chat/completions"
-HEADERS = {"Authorization": f"Bearer {OPENROUTER_API_KEY}"}
 
 MODEL_OPTIONS = {
     "deepseek/deepseek-chat-v3-0324:free": "Deepseek Chat v3",
     "mistralai/devstral-small:free": "Mistralai Devstral Small",
     "google/gemma-3-27b-it:free": "Google Gemma 3-27b",
     "meta-llama/llama-4-maverick:free": "Meta Llama 4 Maverick"
-}
-
-import os
-
-api_key = os.getenv("OPENROUTER_API_KEY")
-headers = {
-    "Authorization": f"Bearer {api_key}",
-    "Content-Type": "application/json"
 }
 
 # Layout default
@@ -47,15 +42,6 @@ def chat_title(chat):
             return msg["content"][:30] + ("..." if len(msg["content"]) > 30 else "")
     return "Chat tanpa judul"
 
-# Fungsi copy
-def copy_to_clipboard(text):
-    js_code = f"""
-    <script>
-    navigator.clipboard.writeText(`{text}`);
-    </script>
-    """
-    st.markdown(js_code, unsafe_allow_html=True)
-
 # Sidebar
 with st.sidebar:
     st.title("🌟 Menu Chatbot")
@@ -68,9 +54,6 @@ with st.sidebar:
         if v == model_name:
             st.session_state.current_model = k
             break
-
-    st.markdown("---")
-    st.session_state.dark_mode = st.checkbox("🌃 Dark Mode", value=st.session_state.dark_mode)
 
     st.markdown("---")
     search_term = st.text_input("Cari chat...", "")
@@ -86,43 +69,11 @@ with st.sidebar:
             st.session_state.current_chat = copy.deepcopy(st.session_state.chat_history_list[i])
 
     st.markdown("---")
-    uploaded_file = st.file_uploader("Upload gambar untuk dikirim ke chat", type=["png", "jpg", "jpeg"])
-    if uploaded_file:
-        img_bytes = uploaded_file.read()
-        img_b64 = base64.b64encode(img_bytes).decode()
-        img_markdown = f"![uploaded_image](data:image/png;base64,{img_b64})"
-        st.session_state.current_chat.append({"role": "user", "content": img_markdown})
-
-        if st.session_state.current_chat_index == -1:
-            st.session_state.chat_history_list.append(copy.deepcopy(st.session_state.current_chat))
-            st.session_state.current_chat_index = len(st.session_state.chat_history_list) - 1
-        else:
-            st.session_state.chat_history_list[st.session_state.current_chat_index] = copy.deepcopy(st.session_state.current_chat)
-
-    st.markdown("---")
-    if st.button("📋 Share Chat (copy ke clipboard)"):
-        if st.session_state.current_chat:
-            full_chat_text = "\n\n".join(
-                [f"{msg['role'].capitalize()}: {msg['content']}" for msg in st.session_state.current_chat]
-            )
-            copy_to_clipboard(full_chat_text)
-            st.success("Chat berhasil disalin ke clipboard!")
-        else:
-            st.warning("Tidak ada chat untuk disalin.")
-
-    st.markdown("---")
     if st.button("🔄 Reset Chat"):
         st.session_state.current_chat = []
         st.session_state.current_chat_index = -1
 
-    st.markdown("---")
-    if st.session_state.current_chat:
-        chat_json = json.dumps(st.session_state.current_chat, indent=2)
-        b64 = base64.b64encode(chat_json.encode()).decode()
-        href = f'<a href="data:file/json;base64,{b64}" download="chat_history.json">⬇️ Download Chat History (.json)</a>'
-        st.markdown(href, unsafe_allow_html=True)
-
-# CSS untuk dark mode saja
+# CSS untuk dark mode
 if st.session_state.dark_mode:
     dark_css = """
     <style>
@@ -135,6 +86,13 @@ if st.session_state.dark_mode:
 # Judul utama
 st.title("AI Chat Bot Buatan Calon Emak Emak 🤖🎉")
 
+# Upload File
+uploaded_file = st.file_uploader("📎 Upload file txt/docx/pdf", type=["txt"])
+if uploaded_file is not None:
+    file_content = uploaded_file.read().decode("utf-8")
+    st.text_area("📄 Isi File", file_content, height=150)
+    st.session_state.current_chat.append({"role": "user", "content": f"Baca dan ringkas isi file ini:\n{file_content}"})
+
 # Container chat
 chat_container = st.container()
 with chat_container:
@@ -146,11 +104,25 @@ with chat_container:
                 st.markdown(f"<div style='text-align:right; background:#3b82f6; color:white; padding:8px; border-radius:10px; margin-bottom:8px;'>{content}</div>", unsafe_allow_html=True)
             else:
                 st.markdown(f"<div style='text-align:left; background:#fff9c4; color:black; padding:8px; border-radius:10px; margin-bottom:8px;'>{content}</div>", unsafe_allow_html=True)
+
+        # Tombol copy ke clipboard
+        if st.button("📋 Salin Semua Chat ke Clipboard"):
+            full_text = "\n".join([f"{m['role'].capitalize()}: {m['content']}" for m in st.session_state.current_chat])
+            b64 = base64.b64encode(full_text.encode()).decode()
+            js = f"""
+            <script>
+            const text = atob('{b64}');
+            navigator.clipboard.writeText(text).then(function() {{
+                alert('Chat telah disalin ke clipboard!');
+            }});
+            </script>
+            """
+            st.components.v1.html(js)
     else:
         st.info("Mulai chat dengan mengetik pesan di bawah dan tekan Enter!")
 
-# Input pesan
-user_input = st.text_input("Ketik pesanmu di sini dan tekan Enter:", value="", placeholder="Tulis pesanmu di sini...")
+# Chat input
+user_input = st.chat_input("Ketik pesanmu di sini...")
 
 if user_input:
     st.session_state.current_chat.append({"role": "user", "content": user_input})
