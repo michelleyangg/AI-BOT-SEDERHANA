@@ -16,6 +16,12 @@ MODEL_OPTIONS = {
     "google/gemma-3-27b-it:free": "Google Gemma 3-27b",
     "meta-llama/llama-4-maverick:free": "Meta Llama 4 Maverick"
 }
+import os
+
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
+HEADERS = {
+    "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+}
 
 # Layout default
 st.set_page_config(layout="wide")
