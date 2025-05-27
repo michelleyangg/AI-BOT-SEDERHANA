@@ -5,10 +5,8 @@ import json
 import base64
 
 # API Key dan URL
-OPENROUTER_API_KEY = "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"
 HEADERS = {
-  "Authorization": f"Bearer {OPENROUTER_API_KEY}",
-  "X-Title": "AI Chatbot Streamlit"
+  "Authorization": f"Bearer {st.secrets.get('OPEN_ROUTER_API_KEY')}",
 }
 API_URL = "https://openrouter.ai/api/v1/chat/completions"
 
