@@ -8,7 +8,6 @@ import base64
 OPENROUTER_API_KEY = "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"
 HEADERS = {
   "Authorization": f"Bearer {OPENROUTER_API_KEY}",
-  "HTTP-Referer": "https://example-deploy-chatbot.streamlit.app",
   "X-Title": "AI Chatbot Streamlit"
 }
 API_URL = "https://openrouter.ai/api/v1/chat/completions"
