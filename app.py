@@ -5,7 +5,7 @@ import json
 import base64
 
 # API Key dan URL
-OPENROUTER_API_KEY = "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"
+OPENROUTER_API_KEY = "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"
 HEADERS = {
   "Authorization": f"Bearer {OPENROUTER_API_KEY}",
   "HTTP-Referer": "https://example-deploy-chatbot.streamlit.app",
@@ -146,3 +146,4 @@ if user_input:
             bot_reply = f"❌ Error saat menghubungi API: {str(e)}"
 
     st.session_state.current_chat.append({"role": "assistant", "content": bot_reply})
+    st.rerun()
